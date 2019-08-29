@@ -36,6 +36,12 @@ const App: React.FC = () => {
         ))}
       </div>
       {selected && <Photo zoom={zoom} url={selected}></Photo>}
+      {!selected && (
+        <h1>
+          Click on the image to select and click again to zoom. Escape to
+          remove.
+        </h1>
+      )}
     </div>
   );
 };
