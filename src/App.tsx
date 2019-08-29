@@ -8,6 +8,7 @@ const images = [
 ];
 const App: React.FC = () => {
   const [selected, setSelected] = useState("");
+  const [zoom, setZoom] = useState(2);
 
   useEffect(() => {
     document.addEventListener("keydown", e => {
@@ -16,7 +17,13 @@ const App: React.FC = () => {
   }, []);
 
   return (
-    <div>
+    <div style={{ textAlign: "center" }}>
+      select zoom level
+      <select value={zoom} onChange={e => setZoom(Number(e.target.value))}>
+        <option value={2}>2</option>
+        <option value={3}>3</option>
+        <option value={4}>4</option>
+      </select>
       <div style={{ textAlign: "center" }}>
         {images.map(u => (
           <img
@@ -28,7 +35,7 @@ const App: React.FC = () => {
           ></img>
         ))}
       </div>
-      {selected && <Photo zoom={2} url={selected}></Photo>}
+      {selected && <Photo zoom={zoom} url={selected}></Photo>}
     </div>
   );
 };
