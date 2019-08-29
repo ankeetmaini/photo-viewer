@@ -28,7 +28,7 @@ const App: React.FC = () => {
           ></img>
         ))}
       </div>
-      {selected && <Photo zoom={4} url={selected}></Photo>}
+      {selected && <Photo zoom={2} url={selected}></Photo>}
     </div>
   );
 };

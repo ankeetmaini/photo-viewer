@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useState, useRef, useEffect } from "react";
 import "./Photo.scss";
-import { cursorTo } from "readline";
 
 interface Props {
   url: string;
@@ -11,10 +10,15 @@ const noop = () => {};
 
 const Photo: FunctionComponent<Props> = ({ url, zoom }) => {
   const [scale, setScale] = useState(false);
+  const [rotation, setRotation] = useState(0);
   const [moveX, setMoveX] = useState(0);
   const [moveY, setMoveY] = useState(0);
   const [coords, setCoords] = useState<DOMRect | ClientRect>();
   const image = useRef<HTMLImageElement>(null);
+  const turnLeft = () => {
+    setRotation((rotation - 90) % 360);
+  };
+  const turnRight = () => setRotation((rotation + 90) % 360);
 
   const getTransform = () => {
     let trans = "";
@@ -22,8 +26,12 @@ const Photo: FunctionComponent<Props> = ({ url, zoom }) => {
 
     if (moveX) trans += `translateX(${-1 * moveX}px)`;
     if (moveY) trans += `translateY(${-1 * moveY}px)`;
+
+    if (rotation) trans += `rotate(${rotation}deg)`;
     return trans;
   };
+
+  const isLandscape = () => rotation === 0 || rotation === 180;
 
   const onMouseMove = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
     if (coords) {
@@ -31,11 +39,27 @@ const Photo: FunctionComponent<Props> = ({ url, zoom }) => {
       const midY = coords.top + coords.height / 2;
       const deltaX = e.clientX - midX;
       const deltaY = e.clientY - midY;
+      const maxDeltaX =
+        ((isLandscape() ? coords.width : coords.height) * zoom) / 10;
+      const minDeltaX = -maxDeltaX;
 
-      setMoveX(deltaX);
-      setMoveY(deltaY);
-
-      console.log({ deltaX, deltaY });
+      const maxDeltaY =
+        ((isLandscape() ? coords.height : coords.width) * zoom) / 10;
+      const minDeltaY = -maxDeltaY;
+      const dx =
+        deltaX > maxDeltaX
+          ? maxDeltaX
+          : deltaX < minDeltaX
+          ? minDeltaX
+          : deltaX;
+      setMoveX(dx);
+      const dy =
+        deltaY > maxDeltaY
+          ? maxDeltaY
+          : deltaY < minDeltaY
+          ? minDeltaY
+          : deltaY;
+      setMoveY(dy);
     }
   };
 
@@ -48,9 +72,10 @@ const Photo: FunctionComponent<Props> = ({ url, zoom }) => {
 
   return (
     <div className="container">
-      <div className="imageContainer">
+      <div className="imageContainer" onMouseMove={scale ? onMouseMove : noop}>
         <img
           ref={image}
+          onClick={onTap}
           onLoad={() => {
             if (image && image.current) {
               setCoords(image.current.getBoundingClientRect());
@@ -58,13 +83,15 @@ const Photo: FunctionComponent<Props> = ({ url, zoom }) => {
           }}
           style={{
             transform: getTransform(),
-            cursor: scale ? "move" : "auto"
+            cursor: scale ? "move" : "zoom-in"
           }}
-          onClick={onTap}
-          onMouseMove={scale ? onMouseMove : noop}
           src={url}
           className="image"
         />
+      </div>
+      <div className="controls">
+        <button onClick={turnLeft}>left</button>
+        <button onClick={turnRight}>right</button>
       </div>
     </div>
   );
